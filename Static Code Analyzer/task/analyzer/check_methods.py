@@ -36,23 +36,18 @@ class LineByLineChecker:
                                 f"{self.path}: Line {line_no}: S002 {self.codes['S002']}"])
 
     def error_s003(self, line_no: int, line: str):  # Unnecessary semicolon after a statement
-        if re.match(".*\(.*\);.*", line) or \
-                re.match(" *[A-Za-z]*;", line):
-            # print(line.strip(), '-------', res)
+        if re.match(r".*\(.*\);.*", line) or re.match(" *[A-Za-z]*;", line):
             self.errors.append([line_no,
                                 'S003',
                                 self.path,
                                 f"{self.path}: Line {line_no}: S003 {self.codes['S003']}"])
 
     def error_s004(self, line_no: int, line: str):  # Less than two spaces before inline comments
-        if '#' in line:
-            if re.match("^#.*", line):
-                pass
-            elif re.match('.*( ){2,}#.*', line) is None and '#' in line:
-                self.errors.append([line_no,
-                                    'S004',
-                                    self.path,
-                                    f"{self.path}: Line {line_no}: S004 {self.codes['S004']}"])
+        if re.match(r'.*\S # .*', line):
+            self.errors.append([line_no,
+                                'S004',
+                                self.path,
+                                f"{self.path}: Line {line_no}: S004 {self.codes['S004']}"])
 
     def error_s005(self, line_no: int, line: str):  # TO_DO found (in comments only and case-insensitive)
         if re.match('.*#.*TODO.*', line, re.IGNORECASE):
@@ -72,38 +67,33 @@ class LineByLineChecker:
                 self.blank_line_count = 0
 
     def error_s007(self, line_no: int, line: str):  # Too many spaces after construction_name (def or class)
-        if re.match(".*(class|def) {2,}.*", line):
-            beginning_line = re.match(".*(class|def) {2,}", line)[0]
-            if 'class' in beginning_line:
-                name = line[len(beginning_line):-2]
-            elif 'def' in beginning_line:
-                name = line[len(beginning_line):-4]
+        beginning_line = re.match(".*(class|def) {2,}", line)
+        if beginning_line:
+            name = beginning_line.groups()[0]
             self.errors.append([line_no,
                                 'S007',
                                 self.path,
                                 f"{self.path}: Line {line_no}: S007 {self.codes['S007'].format(name)}"])
 
-    def error_s008(self, line_no: int, line: str):  # Class name {} should be written in CamelCase
-        if 'class' in line:
-            if not re.match(".* ?class [A-Z][a-zA-Z]*(\\([A-Z][a-zA-Z]*\\))?:", line):
-                if re.match(".*class [a-z]+", line):
-                    beginning_line = re.match(".*class +[A-Z]?", line)[0]
-                    class_name = line[len(beginning_line):-2]
-                    self.errors.append([line_no,
-                                        'S008',
-                                        self.path,
-                                        f"{self.path}: Line {line_no}: S008 {self.codes['S008'].format(class_name)}"])
+    def error_s008(self, line_no: int, line: str):  # Class name {} should be written in camelCase
+        match = re.match("class ([a-z]+[a-z]*[A-Z]?[a-z]*)", line)
+        if match:
+            class_name = match.groups()[0]
+            self.errors.append([line_no,
+                                'S008',
+                                self.path,
+                                f"{self.path}: Line {line_no}: S008 {self.codes['S008'].format(class_name)}"])
 
     def error_s009(self, line_no: int, line: str):  # Function name {} should be written in snake_case
-        if 'def' in line:
-            if not re.match(".*def _{,2}?[a-z]*_?[a-z0-9]*_{,2}?\\(.*\\):$", line):
-                if re.match(".*def +[A-Z]", line):
-                    beginning_line = re.match(".*def +[a-z]?", line)[0]
-                    def_name = line[len(beginning_line):-4]
-                    self.errors.append([line_no,
-                                        'S009',
-                                        self.path,
-                                        f"{self.path}: Line {line_no}: S009 {self.codes['S009'].format(def_name)}"])
+        # if not match right variants like __init__(), snake_case()
+        if not re.match(".*def _{,2}?[a-z]*_?[a-z0-9]*_{,2}?\\(.*\\):$", line):
+            match = re.match(".*def ([A-Z].*)\\(.*\\)", line)
+            if match:
+                def_name = match.groups()[0]
+                self.errors.append([line_no,
+                                    'S009',
+                                    self.path,
+                                    f"{self.path}: Line {line_no}: S009 {self.codes['S009'].format(def_name)}"])
 
 
 class ASTChecker:
