@@ -59,12 +59,12 @@ class LineByLineChecker:
     def error_s006(self, line_no: int, line: str):  # More than two blank lines preceding a code line
         if line.strip() == '':
             self.blank_line_count += 1
-            if self.blank_line_count > 2:
-                self.errors.append([line_no + 1,
-                                    'S006',
-                                    self.path,
-                                    f"{self.path}: Line {line_no + 1}: S006 {self.codes['S006']}"])
-                self.blank_line_count = 0
+        if self.blank_line_count > 2:
+            self.errors.append([line_no + 1,
+                                'S006',
+                                self.path,
+                                f"{self.path}: Line {line_no + 1}: S006 {self.codes['S006']}"])
+            self.blank_line_count = 0
 
     def error_s007(self, line_no: int, line: str):  # Too many spaces after construction_name (def or class)
         beginning_line = re.match(".*(class|def) {2,}", line)

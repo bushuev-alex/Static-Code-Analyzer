@@ -11,12 +11,12 @@ class Checker(LineByLineChecker, ASTChecker):
         super().__init__()
         self.path = path_
 
-    def is_blank_line(self, m_line: str):
-        if m_line.strip() != '':
+    def reset_blank_line_count(self, line: str):
+        if line.strip() != '':
             self.blank_line_count = 0
 
     def check_line_by_line(self, line_no: int, line: str):
-        self.is_blank_line(line)
+        self.reset_blank_line_count(line)
         self.error_s001(line_no, line)  # Too long
         self.error_s002(line_no, line)  # Indentation is not a multiple of four
         self.error_s003(line_no, line)  # Unnecessary semicolon after a statement
