@@ -8,8 +8,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     path = args.path
     my_checker = Checker(path)
-    if my_checker.select_dir_or_file() == 'file':
-        my_checker.check_file()
-    elif my_checker.select_dir_or_file() == 'dir':
-        my_checker.check_dir()
+    my_checker.check_dir_or_file()
     my_checker.print_errors()

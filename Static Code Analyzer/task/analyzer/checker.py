@@ -39,30 +39,30 @@ class Checker(LineByLineChecker, ASTChecker):
                 for default in node.args.defaults:  # The default argument value is mutable
                     self.check_default_argument_mutable(default)
 
-    def check_file(self):
-        if re.match('.*\\.py$', self.path):
+    def check_file(self, path: str):
+        if re.match('.*\\.py$', path):
             # Line-by-line checkers
-            with open(self.path, 'r', encoding="UTF-8") as file:
+            with open(path, 'r', encoding="UTF-8") as file:
                 for n_line, line in enumerate(file, start=1):
                     self.check_line_by_line(n_line, line)
             # AST node checkers
-            with open(self.path, 'r', encoding="UTF-8") as file:
+            with open(path, 'r', encoding="UTF-8") as file:
                 self.check_ast_nodes(file)
 
-    def check_dir(self):
-        file_list = os.listdir(self.path)
+    def check_dir(self, path: str):
+        file_list = os.listdir(path)
         file_list.sort()
         for file in file_list:
             path = self.path
             self.path = self.path + f'{os.sep}' + file
-            self.check_file()
+            self.check_file(self.path)
             self.path = path
 
-    def select_dir_or_file(self):
+    def check_dir_or_file(self):
         if os.path.isdir(self.path):
-            return "dir"
+            self.check_dir(self.path)
         elif os.path.isfile(self.path):
-            return "file"
+            self.check_file(self.path)
 
     def print_errors(self):
         self.errors.sort(key=lambda element: (element[2], element[0], element[1]))
