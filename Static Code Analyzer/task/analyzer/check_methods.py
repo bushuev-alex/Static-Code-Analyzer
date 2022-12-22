@@ -99,9 +99,8 @@ class LineByLineChecker:
 class ASTChecker:
 
     def check_node_in_snake_case(self, obj):
-        func = obj.__dict__
-        lineno = func['lineno']
-        arg_name = func['arg']
+        lineno = obj.lineno
+        arg_name = obj.arg
         if not re.match("^[a-z0-9_]*_?[a-z0-9]*$", arg_name):
             self.errors.append([lineno,
                                 'S010',
@@ -127,8 +126,7 @@ class ASTChecker:
 
     def check_default_argument_mutable(self, default):
         if not isinstance(default, ast.Constant):
-            default_dict = default.__dict__
-            lineno = default_dict['lineno']
+            lineno = default.lineno
             self.errors.append([lineno,
                                 'S012',
                                 self.path,
