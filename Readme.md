@@ -15,7 +15,8 @@ This way, you will familiarize yourself with the concept of static code analysis
 This is CLI (command line interface) analyser. You can analyse files and folders with it. 
 
 To launch analysis you should print following string in CL:
-* python3 code_analyser.py **path_to_folder_or_file** where **path_to_folder_or_file** is like:
+* python3 code_analyser.py **path_to_folder_or_file** \
+where **path_to_folder_or_file** is like:
   * '.' - default value (current folder)
   * /full/path/to/file.py
   * /full/path/to/folder
