@@ -112,9 +112,11 @@ class ASTChecker:
             for target in obj.targets:
                 var_dict = target.__dict__
                 try:
+                    # var_dict.get("id")
                     var_name = var_dict['id']
                     lineno = var_dict['lineno']
                 except KeyError:
+                    print(var_dict.get("value").__dict__)
                     var_name = var_dict['value'].id + '.' + var_dict['attr']
                     lineno = var_dict['lineno']
                 if not re.match("^[a-z0-9_]*\.?_?[a-z0-9]*$", var_name):

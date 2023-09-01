@@ -6,15 +6,15 @@ from check_methods import LineByLineChecker, ASTChecker
 
 class Checker(LineByLineChecker, ASTChecker):
 
-    def __init__(self, path_: str):
+    def __init__(self, path: str) -> None:
         super().__init__()
-        self.path = path_
+        self.path = path
 
-    def reset_blank_line_count(self, line: str):
+    def reset_blank_line_count(self, line: str) -> None:
         if line.strip() != '':
             self.blank_line_count = 0
 
-    def check_line_by_line(self, line_no: int, line: str):
+    def check_line_by_line(self, line_no: int, line: str) -> None:
         self.reset_blank_line_count(line)
         self.error_s001(line_no, line)  # Too long
         self.error_s002(line_no, line)  # Indentation is not a multiple of four
@@ -26,7 +26,7 @@ class Checker(LineByLineChecker, ASTChecker):
         self.error_s008(line_no, line)  # Class name {} should be written in CamelCase
         self.error_s009(line_no, line)  # Function name {} should be written in snake_case
 
-    def check_ast_nodes(self, file):
+    def check_ast_nodes(self, file) -> None:
         text = file.read()
         tree = ast.parse(text)
         nodes = ast.walk(tree)
@@ -39,32 +39,29 @@ class Checker(LineByLineChecker, ASTChecker):
                 for default in node.args.defaults:  # The default argument value is mutable
                     self.check_default_argument_mutable(default)
 
-    def check_file(self, path: str):
-        if re.match('.*\\.py$', path):
+    def check_file(self, path_to_file: str) -> None:
+        if re.match('.*\\.py$', path_to_file):
             # Line-by-line checkers
-            with open(path, 'r', encoding="UTF-8") as file:
+            with open(path_to_file, 'r', encoding="UTF-8") as file:
                 for n_line, line in enumerate(file, start=1):
                     self.check_line_by_line(n_line, line)
             # AST node checkers
-            with open(path, 'r', encoding="UTF-8") as file:
+            with open(path_to_file, 'r', encoding="UTF-8") as file:
                 self.check_ast_nodes(file)
 
-    def check_dir(self, path: str):
-        file_list = os.listdir(path)
+    def check_dir(self) -> None:
+        file_list = os.listdir(self.path)
         file_list.sort()
         for file in file_list:
-            path = self.path
-            self.path = self.path + f'{os.sep}' + file
-            self.check_file(self.path)
-            self.path = path
+            path_to_file = self.path + f'{os.sep}' + file
+            self.check_file(path_to_file)
 
-    def check_dir_or_file(self):
+    def check_if_dir(self) -> bool:
         if os.path.isdir(self.path):
-            self.check_dir(self.path)
-        elif os.path.isfile(self.path):
-            self.check_file(self.path)
+            return True
+        return False
 
-    def print_errors(self):
+    def print_errors(self) -> None:
         self.errors.sort(key=lambda element: (element[2], element[0], element[1]))
         for error in self.errors:
             print(error[3])
