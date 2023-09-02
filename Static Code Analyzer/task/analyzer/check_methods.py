@@ -110,15 +110,21 @@ class ASTChecker:
     def check_variable_in_snake_case(self, obj):
         if isinstance(obj, ast.Assign):
             for target in obj.targets:
+                # print(target)
                 var_dict = target.__dict__
+                # print(var_dict)
                 try:
-                    # var_dict.get("id")
                     var_name = var_dict['id']
                     lineno = var_dict['lineno']
                 except KeyError:
-                    print(var_dict.get("value").__dict__)
-                    var_name = var_dict['value'].id + '.' + var_dict['attr']
-                    lineno = var_dict['lineno']
+                    # print(var_dict.get("value").__dict__)
+                    try:
+                        var_name = var_dict['value'].id + '.' + var_dict['attr']
+                        lineno = var_dict['lineno']
+                    except AttributeError:
+                        var_name = var_dict['value'].value.id + '.' + var_dict['value'].attr
+                        lineno = var_dict['value'].lineno
+                        # print(var_dict['value'].value.id + '.' + var_dict['value'].attr)
                 if not re.match("^[a-z0-9_]*\.?_?[a-z0-9]*$", var_name):
                     self.errors.append(
                         [lineno,
