@@ -26,6 +26,13 @@ class ParentChecker(ABC):
 class LineByLineChecker(ParentChecker):
 
     def error_s001(self, line_no: int, line: str, path: str) -> bool:  # 'Too long' e.c. >= 80
+        """
+
+        :param line_no:
+        :param line:
+        :param path:
+        :return:
+        """
         if len(line) >= 80:
             self.errors.append((line_no,
                                 'S001',
@@ -167,3 +174,4 @@ class ASTChecker(ParentChecker):
                                 f"{path}: Line {lineno}: S012 {self.codes['S012']}"))
             return True
         return False
+
