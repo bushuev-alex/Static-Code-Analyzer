@@ -10,6 +10,5 @@ if __name__ == '__main__':
     if my_checker.check_if_dir():
         my_checker.check_dir()
     else:
-        my_checker.check_file(args.path)
-
+        my_checker.check_file()
     my_checker.print_errors()

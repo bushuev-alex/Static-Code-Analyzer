@@ -1,10 +1,12 @@
 import re
 import ast
+from abc import ABC
 
 
-class LineByLineChecker:
+class ParentChecker(ABC):
 
     def __init__(self):
+        self.path = None
         self.errors = []
         self.blank_line_count = 0
         self.codes = {'S001': 'Too long',
@@ -20,71 +22,90 @@ class LineByLineChecker:
                       'S011': "Variable {} should be written in snake_case",
                       'S012': "Default argument value is mutable"}
 
-    def error_s001(self, line_no: int, line: str):  # 'Too long' e.c. >= 80
+
+class LineByLineChecker(ParentChecker):
+
+    def error_s001(self, line_no: int, line: str, path: str) -> bool:  # 'Too long' e.c. >= 80
         if len(line) >= 80:
             self.errors.append([line_no,
                                 'S001',
-                                self.path,
-                                f"{self.path}: Line {line_no}: S001 {self.codes['S001']}"])
+                                path,
+                                f"{path}: Line {line_no}: S001 {self.codes['S001']}"])
+            return True
+        return False
 
-    def error_s002(self, line_no: int, line: str):  # Indentation is not a multiple of four
+    def error_s002(self, line_no: int, line: str, path: str) -> bool:  # Indentation is not a multiple of four
         result = re.match("^( *)", line)
         if len(result.group()) % 4 != 0:  # or """if len(re.match('^ *', line)[0]) % 4 != 0:"""
             self.errors.append([line_no,
                                 'S002',
-                                self.path,
-                                f"{self.path}: Line {line_no}: S002 {self.codes['S002']}"])
+                                path,
+                                f"{path}: Line {line_no}: S002 {self.codes['S002']}"])
+            return True
+        return False
 
-    def error_s003(self, line_no: int, line: str):  # Unnecessary semicolon after a statement
+    def error_s003(self, line_no: int, line: str, path: str) -> bool:  # Unnecessary semicolon after a statement
         if re.match(r".*\(.*\);.*", line) or re.match(" *[A-Za-z]*;", line):
             self.errors.append([line_no,
                                 'S003',
-                                self.path,
-                                f"{self.path}: Line {line_no}: S003 {self.codes['S003']}"])
+                                path,
+                                f"{path}: Line {line_no}: S003 {self.codes['S003']}"])
+            return True
+        return False
 
-    def error_s004(self, line_no: int, line: str):  # Less than two spaces before inline comments
+    def error_s004(self, line_no: int, line: str, path: str) -> bool:  # Less than two spaces before inline comments
         if re.match(r'.*\S # .*', line):
             self.errors.append([line_no,
                                 'S004',
-                                self.path,
-                                f"{self.path}: Line {line_no}: S004 {self.codes['S004']}"])
+                                path,
+                                f"{path}: Line {line_no}: S004 {self.codes['S004']}"])
+            return True
+        return False
 
-    def error_s005(self, line_no: int, line: str):  # TO_DO found (in comments only and case-insensitive)
+    def error_s005(self, line_no: int, line: str, path: str) -> bool:  # TO_DO found (in comments only and case-insensitive)
         if re.match('.*#.*TODO.*', line, re.IGNORECASE):
             self.errors.append([line_no,
                                 'S005',
-                                self.path,
-                                f"{self.path}: Line {line_no}: S005 {self.codes['S005']}"])
+                                path,
+                                f"{path}: Line {line_no}: S005 {self.codes['S005']}"])
+            return True
+        return False
 
-    def error_s006(self, line_no: int, line: str):  # More than two blank lines preceding a code line
+    def error_s006(self, line_no: int, line: str, path: str) -> bool:  # More than two blank lines preceding a code line
         if line.strip() == '':
             self.blank_line_count += 1
         if self.blank_line_count > 2:
             self.errors.append([line_no + 1,
                                 'S006',
-                                self.path,
-                                f"{self.path}: Line {line_no + 1}: S006 {self.codes['S006']}"])
+                                path,
+                                f"{path}: Line {line_no + 1}: S006 {self.codes['S006']}"])
             self.blank_line_count = 0
+            return True
+        return False
 
-    def error_s007(self, line_no: int, line: str):  # Too many spaces after construction_name (def or class)
+    def error_s007(self, line_no: int, line: str, path: str) -> bool:  # Too many spaces after construction_name (def or class)
         beginning_line = re.match(".*(class|def) {2,}", line)
         if beginning_line:
             name = beginning_line.groups()[0]
             self.errors.append([line_no,
                                 'S007',
-                                self.path,
-                                f"{self.path}: Line {line_no}: S007 {self.codes['S007'].format(name)}"])
+                                path,
+                                f"{path}: Line {line_no}: S007 {self.codes['S007'].format(name)}"])
+            return True
+        return False
 
-    def error_s008(self, line_no: int, line: str):  # Class name {} should be written in camelCase
+    def error_s008(self, line_no: int, line: str, path: str) -> bool:  # Class name {} should be written in camelCase
         match = re.match("class ([a-z]+[a-z]*[A-Z]?[a-z]*)", line)
         if match:
             class_name = match.groups()[0]
             self.errors.append([line_no,
                                 'S008',
-                                self.path,
-                                f"{self.path}: Line {line_no}: S008 {self.codes['S008'].format(class_name)}"])
+                                path,
+                                f"{path}: Line {line_no}: S008 {self.codes['S008'].format(class_name)}"])
+            return True
+        return False
 
-    def error_s009(self, line_no: int, line: str):  # Function name {} should be written in snake_case
+    def error_s009(self, line_no: int, line: str, path: str) -> bool:  # Function name {} should be written in snake_case
         # if not match right variants like __init__(), snake_case()
         if not re.match(".*def _{,2}?[a-z]*_?[a-z0-9]*_{,2}?\\(.*\\):$", line):
             match = re.match(".*def ([A-Z].*)\\(.*\\)", line)
@@ -92,22 +113,26 @@ class LineByLineChecker:
                 def_name = match.groups()[0]
                 self.errors.append([line_no,
                                     'S009',
-                                    self.path,
-                                    f"{self.path}: Line {line_no}: S009 {self.codes['S009'].format(def_name)}"])
+                                    path,
+                                    f"{path}: Line {line_no}: S009 {self.codes['S009'].format(def_name)}"])
+                return True
+            return False
 
 
-class ASTChecker:
+class ASTChecker(ParentChecker):
 
-    def check_node_in_snake_case(self, obj):
+    def check_node_in_snake_case(self, obj, path: str) -> bool:
         lineno = obj.lineno
         arg_name = obj.arg
         if not re.match("^[a-z0-9_]*_?[a-z0-9]*$", arg_name):
             self.errors.append([lineno,
                                 'S010',
-                                self.path,
-                                f"{self.path.lower()}: Line {lineno}: S010 {self.codes['S010'].format(arg_name)}"])
+                                path,
+                                f"{path.lower()}: Line {lineno}: S010 {self.codes['S010'].format(arg_name)}"])
+            return True
+        return False
 
-    def check_variable_in_snake_case(self, obj):
+    def check_variable_in_snake_case(self, obj, path: str) -> bool:
         if isinstance(obj, ast.Assign):
             for target in obj.targets:
                 var_dict = target.__dict__
@@ -126,13 +151,17 @@ class ASTChecker:
                     self.errors.append(
                         [lineno,
                          'S011',
-                         self.path,
-                         f"{self.path}: Line {lineno}: S011 {self.codes['S011'].format(var_name)}"])
+                         path,
+                         f"{path}: Line {lineno}: S011 {self.codes['S011'].format(var_name)}"])
+            return True
+        return False
 
-    def check_default_argument_mutable(self, default):
+    def check_default_argument_mutable(self, default, path: str) -> bool:
         if not isinstance(default, ast.Constant):
             lineno = default.lineno
             self.errors.append([lineno,
                                 'S012',
-                                self.path,
-                                f"{self.path}: Line {lineno}: S012 {self.codes['S012']}"])
+                                path,
+                                f"{path}: Line {lineno}: S012 {self.codes['S012']}"])
+            return True
+        return False
