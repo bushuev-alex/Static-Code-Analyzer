@@ -27,47 +27,48 @@ class LineByLineChecker(ParentChecker):
 
     def error_s001(self, line_no: int, line: str, path: str) -> bool:  # 'Too long' e.c. >= 80
         if len(line) >= 80:
-            self.errors.append([line_no,
+            self.errors.append((line_no,
                                 'S001',
                                 path,
-                                f"{path}: Line {line_no}: S001 {self.codes['S001']}"])
+                                f"{path}: Line {line_no}: S001 {self.codes['S001']}"))
             return True
         return False
 
     def error_s002(self, line_no: int, line: str, path: str) -> bool:  # Indentation is not a multiple of four
         result = re.match("^( *)", line)
         if len(result.group()) % 4 != 0:  # or """if len(re.match('^ *', line)[0]) % 4 != 0:"""
-            self.errors.append([line_no,
+            self.errors.append((line_no,
                                 'S002',
                                 path,
-                                f"{path}: Line {line_no}: S002 {self.codes['S002']}"])
+                                f"{path}: Line {line_no}: S002 {self.codes['S002']}"))
             return True
         return False
 
     def error_s003(self, line_no: int, line: str, path: str) -> bool:  # Unnecessary semicolon after a statement
         if re.match(r".*\(.*\);.*", line) or re.match(" *[A-Za-z]*;", line):
-            self.errors.append([line_no,
+            self.errors.append((line_no,
                                 'S003',
                                 path,
-                                f"{path}: Line {line_no}: S003 {self.codes['S003']}"])
+                                f"{path}: Line {line_no}: S003 {self.codes['S003']}"))
             return True
         return False
 
     def error_s004(self, line_no: int, line: str, path: str) -> bool:  # Less than two spaces before inline comments
         if re.match(r'.*\S # .*', line):
-            self.errors.append([line_no,
+            self.errors.append((line_no,
                                 'S004',
                                 path,
-                                f"{path}: Line {line_no}: S004 {self.codes['S004']}"])
+                                f"{path}: Line {line_no}: S004 {self.codes['S004']}"))
             return True
         return False
 
-    def error_s005(self, line_no: int, line: str, path: str) -> bool:  # TO_DO found (in comments only and case-insensitive)
+    def error_s005(self, line_no: int, line: str,
+                   path: str) -> bool:  # TO_DO found (in comments only and case-insensitive)
         if re.match('.*#.*TODO.*', line, re.IGNORECASE):
-            self.errors.append([line_no,
+            self.errors.append((line_no,
                                 'S005',
                                 path,
-                                f"{path}: Line {line_no}: S005 {self.codes['S005']}"])
+                                f"{path}: Line {line_no}: S005 {self.codes['S005']}"))
             return True
         return False
 
@@ -75,22 +76,23 @@ class LineByLineChecker(ParentChecker):
         if line.strip() == '':
             self.blank_line_count += 1
         if self.blank_line_count > 2:
-            self.errors.append([line_no + 1,
+            self.errors.append((line_no + 1,
                                 'S006',
                                 path,
-                                f"{path}: Line {line_no + 1}: S006 {self.codes['S006']}"])
+                                f"{path}: Line {line_no + 1}: S006 {self.codes['S006']}"))
             self.blank_line_count = 0
             return True
         return False
 
-    def error_s007(self, line_no: int, line: str, path: str) -> bool:  # Too many spaces after construction_name (def or class)
+    def error_s007(self, line_no: int, line: str,
+                   path: str) -> bool:  # Too many spaces after construction_name (def or class)
         beginning_line = re.match(".*(class|def) {2,}", line)
         if beginning_line:
             name = beginning_line.groups()[0]
-            self.errors.append([line_no,
+            self.errors.append((line_no,
                                 'S007',
                                 path,
-                                f"{path}: Line {line_no}: S007 {self.codes['S007'].format(name)}"])
+                                f"{path}: Line {line_no}: S007 {self.codes['S007'].format(name)}"))
             return True
         return False
 
@@ -98,23 +100,24 @@ class LineByLineChecker(ParentChecker):
         match = re.match("class ([a-z]+[a-z]*[A-Z]?[a-z]*)", line)
         if match:
             class_name = match.groups()[0]
-            self.errors.append([line_no,
+            self.errors.append((line_no,
                                 'S008',
                                 path,
-                                f"{path}: Line {line_no}: S008 {self.codes['S008'].format(class_name)}"])
+                                f"{path}: Line {line_no}: S008 {self.codes['S008'].format(class_name)}"))
             return True
         return False
 
-    def error_s009(self, line_no: int, line: str, path: str) -> bool:  # Function name {} should be written in snake_case
+    def error_s009(self, line_no: int, line: str,
+                   path: str) -> bool:  # Function name {} should be written in snake_case
         # if not match right variants like __init__(), snake_case()
         if not re.match(".*def _{,2}?[a-z]*_?[a-z0-9]*_{,2}?\\(.*\\):$", line):
             match = re.match(".*def ([A-Z].*)\\(.*\\)", line)
             if match:
                 def_name = match.groups()[0]
-                self.errors.append([line_no,
+                self.errors.append((line_no,
                                     'S009',
                                     path,
-                                    f"{path}: Line {line_no}: S009 {self.codes['S009'].format(def_name)}"])
+                                    f"{path}: Line {line_no}: S009 {self.codes['S009'].format(def_name)}"))
                 return True
             return False
 
@@ -125,10 +128,10 @@ class ASTChecker(ParentChecker):
         lineno = obj.lineno
         arg_name = obj.arg
         if not re.match("^[a-z0-9_]*_?[a-z0-9]*$", arg_name):
-            self.errors.append([lineno,
+            self.errors.append((lineno,
                                 'S010',
                                 path,
-                                f"{path.lower()}: Line {lineno}: S010 {self.codes['S010'].format(arg_name)}"])
+                                f"{path.lower()}: Line {lineno}: S010 {self.codes['S010'].format(arg_name)}"))
             return True
         return False
 
@@ -148,20 +151,19 @@ class ASTChecker(ParentChecker):
                         lineno = var_dict.get('value').__dict__.get('lineno')
                     var_name = '.'.join((var_name_id, var_name_attr))
                 if not re.match("^[a-z0-9_]*\.?_?[a-z0-9_]*$", var_name):
-                    self.errors.append(
-                        [lineno,
-                         'S011',
-                         path,
-                         f"{path}: Line {lineno}: S011 {self.codes['S011'].format(var_name)}"])
+                    self.errors.append((lineno,
+                                        'S011',
+                                        path,
+                                        f"{path}: Line {lineno}: S011 {self.codes['S011'].format(var_name)}"))
             return True
         return False
 
     def check_default_argument_mutable(self, default, path: str) -> bool:
         if not isinstance(default, ast.Constant):
             lineno = default.lineno
-            self.errors.append([lineno,
+            self.errors.append((lineno,
                                 'S012',
                                 path,
-                                f"{path}: Line {lineno}: S012 {self.codes['S012']}"])
+                                f"{path}: Line {lineno}: S012 {self.codes['S012']}"))
             return True
         return False
