@@ -122,7 +122,7 @@ class ASTChecker:
                         var_name_attr = var_dict.get('value').__dict__.get('attr')
                         lineno = var_dict.get('value').__dict__.get('lineno')
                     var_name = '.'.join((var_name_id, var_name_attr))
-                if not re.match("^[a-z0-9_]*\.?_?[a-z0-9]*$", var_name):
+                if not re.match("^[a-z0-9_]*\.?_?[a-z0-9_]*$", var_name):
                     self.errors.append(
                         [lineno,
                          'S011',
